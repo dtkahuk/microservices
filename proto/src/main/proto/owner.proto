@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "com.xdima.grps.owner";
+option java_outer_classname = "OwnerProto";
+
+// The service definition.
+service OwnerService {
+    // get list of owneres
+    rpc getOwners (GetOwnersRequest) returns (stream Owner) {}
+}
+
+message GetOwnersRequest {
+}
+
+message Owner {
+    int64 id = 1;
+    string name = 2;
+    string phone = 3;
+}
+
+
