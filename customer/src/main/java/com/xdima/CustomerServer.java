@@ -1,5 +1,7 @@
 package com.xdima;
 
+import brave.Tracing;
+import brave.grpc.GrpcTracing;
 import com.xdima.grps.customer.CustomerServiceGrpc;
 import com.xdima.grps.customer.GetCustomersRequest;
 import com.xdima.model.Customer;
@@ -11,22 +13,23 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class CustomerServer {
+    private static final String CUSTOMER_SERVER = "customer";
     private static final int PORT = 50052;
 
     private io.grpc.Server server;
 
-    public void start ()     throws IOException {
-        server = ServerBuilder.forPort(PORT).addService(new CustomerService()).build().start();
-        Runtime.getRuntime().addShutdownHook(new Thread() {
-            @Override
-            public void run() {
-                // Use stderr here since the logger may have been reset by its JVM shutdown hook.
-                System.err.println("*** shutting down gRPC server since JVM is shutting down");
-                stopServer();
-                System.err.println("*** server shut down");
-            }
-        });
+    private void start() throws IOException {
+        Tracing tracing = ZipkinUtils.createTracing(ZipkinUtils.createHttpSender(), CUSTOMER_SERVER);
+        GrpcTracing grpcTracing = GrpcTracing.create(tracing);
+        server = ServerBuilder.forPort(PORT).addService(new CustomerService()).intercept(grpcTracing.newServerInterceptor()).build().start();
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            // Use stderr here since the logger may have been reset by its JVM shutdown hook.
+            System.err.println("*** shutting down gRPC server since JVM is shutting down");
+            stopServer();
+            System.err.println("*** server shut down");
+        }));
     }
+
     private void stopServer() {
         if (server != null) {
             server.shutdown();
@@ -36,7 +39,7 @@ public class CustomerServer {
     /**
      * Await termination on the main thread since the grpc library uses daemon threads.
      */
-    public  void blockUntilShutdown() throws InterruptedException {
+    private void blockUntilShutdown() throws InterruptedException {
         if (server != null) {
             server.awaitTermination();
         }
@@ -52,20 +55,28 @@ public class CustomerServer {
         private final static List<Customer> customers = new ArrayList<>();
 
         static {
-            for (int i = 1; i< 100; i++){
-                customers.add(new Customer(i, "grpsCustomer"+i, String.format("tkachuk%s@gmail.com", i)));
+            for (int i = 1; i < 100; i++) {
+                customers.add(new Customer(i, "grpsCustomer" + i, String.format("tkachuk%s@gmail.com", i)));
             }
         }
 
         @Override
         public void getCustomers(GetCustomersRequest request, StreamObserver<com.xdima.grps.customer.Customer> responseObserver) {
-
-            customers.forEach(customer -> responseObserver.onNext(
-                    com.xdima.grps.customer.Customer.newBuilder()
-                            .setId(customer.getId())
-                            .setName(customer.getName())
-                            .setEmail(customer.getEmail())
-                            .build()));
+            customers.forEach(customer -> {
+/*
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+*/
+                responseObserver.onNext(
+                        com.xdima.grps.customer.Customer.newBuilder()
+                                .setId(customer.getId())
+                                .setName(customer.getName())
+                                .setEmail(customer.getEmail())
+                                .build());
+            });
             responseObserver.onCompleted();
         }
     }

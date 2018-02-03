@@ -1,5 +1,6 @@
 package com.xdima.client;
 
+import brave.grpc.GrpcTracing;
 import com.netflix.hystrix.HystrixCommandGroupKey;
 import com.netflix.hystrix.HystrixObservableCommand;
 import com.xdima.dto.OwnerDTO;
@@ -35,13 +36,14 @@ public class OwnerClient {
     private final OwnerServiceGrpc.OwnerServiceStub asyncStub;
     private final OwnerServiceGrpc.OwnerServiceBlockingStub blockingStub;
 
-    public OwnerClient(String host, int port) {
+    public OwnerClient(String host, int port, GrpcTracing grpcTracing) {
         this(ManagedChannelBuilder.forAddress(host, port)
+                .intercept(grpcTracing.newClientInterceptor())
                 .usePlaintext(true)
                 .build());
     }
 
-    public OwnerClient(ManagedChannel channel) {
+    private OwnerClient(ManagedChannel channel) {
         this.asyncStub = OwnerServiceGrpc.newStub(channel);
         this.blockingStub = OwnerServiceGrpc.newBlockingStub(channel);
     }

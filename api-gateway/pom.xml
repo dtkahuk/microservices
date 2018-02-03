@@ -3,7 +3,6 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.xdima.microservices</groupId>
     <artifactId>api-gateway</artifactId>
 
     <properties>
@@ -23,6 +22,11 @@
         <dependency>
             <groupId>com.xdima.microservices</groupId>
             <artifactId>proto</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.xdima.microservices</groupId>
+            <artifactId>zipkin</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
@@ -74,6 +78,10 @@
         <dependency>
             <groupId>io.zipkin.brave</groupId>
             <artifactId>brave-instrumentation-grpc</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.zipkin.brave</groupId>
+            <artifactId>brave-instrumentation-spring-webmvc</artifactId>
         </dependency>
         <dependency>
             <groupId>io.zipkin.reporter2</groupId>

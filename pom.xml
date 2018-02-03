@@ -11,6 +11,7 @@
 
     <modules>
         <module>proto</module>
+        <module>zipkin</module>
         <module>api-gateway</module>
         <module>customer</module>
         <module>address</module>
@@ -29,8 +30,9 @@
         <hystrix.version>1.5.12</hystrix.version>
         <rxjava2.interop.version>0.11.4</rxjava2.interop.version>
         <brave.version>4.14.1</brave.version>
-        <!--<brave.grpc.version>4.13.4</brave.grpc.version>-->
-
+        <spring.web.version>5.0.3.RELEASE</spring.web.version>
+        <slf4j.version>1.7.25</slf4j.version>
+        <logback.version>1.2.3</logback.version>
     </properties>
 
     <parent>
@@ -92,7 +94,16 @@
                 <artifactId>spring-boot-starter-webflux</artifactId>
                 <version>${spring.boot.webflux.version}</version>
             </dependency>
-
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-web</artifactId>
+                <version>${spring.web.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-webflux</artifactId>
+                <version>${spring.web.version}</version>
+            </dependency>
             <dependency>
                 <groupId>io.grpc</groupId>
                 <artifactId>grpc-netty</artifactId>
@@ -108,16 +119,19 @@
                 <artifactId>grpc-stub</artifactId>
                 <version>${grpc.version}</version>
             </dependency>
-
             <dependency>
                 <groupId>com.netflix.hystrix</groupId>
                 <artifactId>hystrix-core</artifactId>
                 <version>${hystrix.version}</version>
             </dependency>
-
             <dependency>
                 <groupId>io.zipkin.brave</groupId>
                 <artifactId>brave-instrumentation-grpc</artifactId>
+                <version>${brave.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.zipkin.brave</groupId>
+                <artifactId>brave-instrumentation-spring-webmvc</artifactId>
                 <version>${brave.version}</version>
             </dependency>
             <dependency>
@@ -125,25 +139,16 @@
                 <artifactId>zipkin-sender-okhttp3</artifactId>
                 <version>2.3.1</version>
             </dependency>
-<!--
             <dependency>
-                <groupId>io.zipkin.brave</groupId>
-                <artifactId>brave</artifactId>
-                <version>${brave.version}</version>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-api</artifactId>
+                <version>${slf4j.version}</version>
             </dependency>
--->
-   <!--         <dependency>
-                <groupId>io.zipkin.brave</groupId>
-                <artifactId>brave-grpc</artifactId>
-                <version>${brave.grpc.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>io.grpc</groupId>
-                        <artifactId>grpc-all</artifactId>
-                    </exclusion>
-                </exclusions>
+            <dependency>
+                <groupId>ch.qos.logback</groupId>
+                <artifactId>logback-classic</artifactId>
+                <version>${logback.version}</version>
             </dependency>
--->
         </dependencies>
     </dependencyManagement>
     <build>
