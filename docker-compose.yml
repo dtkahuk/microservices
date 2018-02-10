@@ -1,0 +1,87 @@
+version: "3.4"
+services:
+  api-gateway:
+    image: xdima/api-gateway
+    deploy:
+      restart_policy:
+        condition: on-failure
+    ports:
+      - "8080:8080"
+    networks:
+      - hello_net
+
+  customer:
+    image: xdima/customer
+    deploy:
+      replicas: 2
+      restart_policy:
+        condition: on-failure
+    networks:
+      - hello_net
+
+  owner:
+    image: xdima/owner
+    deploy:
+      replicas: 2
+      restart_policy:
+        condition: on-failure
+    networks:
+      - hello_net
+
+  zipkin:
+    image: openzipkin/zipkin
+    deploy:
+      restart_policy:
+        condition: on-failure
+    ports:
+      - "9411:9411"
+    networks:
+      - hello_net
+
+    environment:
+      # Set to false to disable creation of spans via HTTP collector API
+      - HTTP_COLLECTOR_ENABLED=true
+      # ZooKeeper host string, comma-separated host:port value.
+      - KAFKA_ZOOKEEPER=zookeeper:2181
+      # Name of topic to poll for spans
+      - KAFKA_TOPIC=zipkin
+      # Consumer group this process is consuming on behalf of.
+      - KAFKA_GROUP_ID=zipkin
+  zookeeper:
+    image: wurstmeister/zookeeper
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+    ports:
+      - "2181:2181"
+    networks:
+      - hello_net
+
+  kafka:
+    image: kafka-docker:latest
+    deploy:
+       replicas: 1
+       restart_policy:
+         condition: on-failure
+    ports:
+      - target: 9094
+        published: 9094
+        protocol: tcp
+        mode: host
+    environment:
+      HOSTNAME_COMMAND: "docker info | grep ^Name: | cut -d' ' -f 2"      
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INSIDE:PLAINTEXT,OUTSIDE:PLAINTEXT
+      KAFKA_ADVERTISED_PROTOCOL_NAME: OUTSIDE
+      KAFKA_ADVERTISED_PORT: 9094
+      KAFKA_PROTOCOL_NAME: INSIDE
+      KAFKA_PORT: 9092
+      KAFKA_CREATE_TOPICS: "zipkin:1:2"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - hello_net
+
+networks:
+  hello_net:
