@@ -1,5 +1,14 @@
 package com.xdima.client;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import org.reactivestreams.Publisher;
+import org.reactivestreams.Subscriber;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import brave.grpc.GrpcTracing;
 import com.netflix.hystrix.HystrixCommandGroupKey;
 import com.netflix.hystrix.HystrixObservableCommand;
@@ -12,19 +21,14 @@ import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.stub.StreamObserver;
 import io.reactivex.BackpressureStrategy;
-import org.reactivestreams.Publisher;
-import org.reactivestreams.Subscriber;
 import reactor.adapter.rxjava.RxJava2Adapter;
 import reactor.core.publisher.BaseSubscriber;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import rx.Observable;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 public class CustomerClient {
+    static private Logger log = LoggerFactory.getLogger(CustomerClient.class);
     static private final List<Customer> fallBack = new ArrayList<>(
             Arrays.asList(com.xdima.grps.customer.Customer.newBuilder()
                     .setId(-1)
@@ -61,6 +65,7 @@ public class CustomerClient {
 
     // async server-streaming implementation
     public Flux<CustomerDTO> getCustomers() {
+        log.debug("getCustomers");
         final CustomerHystrix customerHystrix = new CustomerHystrix(HystrixCommandGroupKey.Factory.asKey("customer"));
         Observable<Customer> customerObservable = customerHystrix.toObservable();
         io.reactivex.Observable<Customer> source = RxJavaInterop.toV2Observable(customerObservable);

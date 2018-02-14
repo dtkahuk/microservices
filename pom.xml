@@ -29,10 +29,12 @@
         <java.version>1.8</java.version>
         <hystrix.version>1.5.12</hystrix.version>
         <rxjava2.interop.version>0.11.4</rxjava2.interop.version>
-        <brave.version>4.14.1</brave.version>
+        <brave.version>4.14.3</brave.version>
         <spring.web.version>5.0.3.RELEASE</spring.web.version>
         <slf4j.version>1.7.25</slf4j.version>
         <logback.version>1.2.3</logback.version>
+        <zipkin.reporter.version>2.3.2</zipkin.reporter.version>
+        <kafka.client.version>1.0.0</kafka.client.version>
     </properties>
 
     <parent>
@@ -135,9 +137,19 @@
                 <version>${brave.version}</version>
             </dependency>
             <dependency>
+                <groupId>io.zipkin.brave</groupId>
+                <artifactId>brave-context-slf4j</artifactId>
+                <version>${brave.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>io.zipkin.reporter2</groupId>
                 <artifactId>zipkin-sender-okhttp3</artifactId>
-                <version>2.3.1</version>
+                <version>${zipkin.reporter.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.zipkin.reporter2</groupId>
+                <artifactId>zipkin-sender-kafka11</artifactId>
+                <version>${zipkin.reporter.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.slf4j</groupId>
@@ -148,6 +160,12 @@
                 <groupId>ch.qos.logback</groupId>
                 <artifactId>logback-classic</artifactId>
                 <version>${logback.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.kafka</groupId>
+                <artifactId>kafka-clients</artifactId>
+                <version>${kafka.client.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

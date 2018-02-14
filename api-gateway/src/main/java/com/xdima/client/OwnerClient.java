@@ -1,5 +1,14 @@
 package com.xdima.client;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import org.reactivestreams.Publisher;
+import org.reactivestreams.Subscriber;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import brave.grpc.GrpcTracing;
 import com.netflix.hystrix.HystrixCommandGroupKey;
 import com.netflix.hystrix.HystrixObservableCommand;
@@ -12,19 +21,14 @@ import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.stub.StreamObserver;
 import io.reactivex.BackpressureStrategy;
-import org.reactivestreams.Publisher;
-import org.reactivestreams.Subscriber;
 import reactor.adapter.rxjava.RxJava2Adapter;
 import reactor.core.publisher.BaseSubscriber;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import rx.Observable;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 public class OwnerClient {
+    static private Logger log = LoggerFactory.getLogger(OwnerClient.class);
     static private final List<Owner> fallBack = new ArrayList<>(
             Arrays.asList(com.xdima.grps.owner.Owner.newBuilder()
                     .setId(-1)
@@ -72,6 +76,7 @@ public class OwnerClient {
     }*/
 
     public Flux<OwnerDTO> getOwners() {
+        log.debug("getOwners");
         OwnerHystrix ownerHystrix = new OwnerHystrix(HystrixCommandGroupKey.Factory.asKey("owner"));
         Observable<Owner> ownerObservable = ownerHystrix.toObservable();
         io.reactivex.Observable<Owner> source = RxJavaInterop.toV2Observable(ownerObservable);

@@ -1,5 +1,9 @@
 package com.xdima;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
 import brave.Tracing;
 import brave.grpc.GrpcTracing;
 import com.xdima.grps.customer.CustomerServiceGrpc;
@@ -8,10 +12,6 @@ import com.xdima.model.Customer;
 import io.grpc.ServerBuilder;
 import io.grpc.stub.StreamObserver;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
 public class CustomerServer {
     private static final String CUSTOMER_SERVER = "customer";
     private static final int PORT = 50052;
@@ -19,7 +19,7 @@ public class CustomerServer {
     private io.grpc.Server server;
 
     private void start() throws IOException {
-        Tracing tracing = ZipkinUtils.createTracing(ZipkinUtils.createHttpSender(), CUSTOMER_SERVER);
+        Tracing tracing = ZipkinUtils.createTracing(ZipkinUtils.createSender(), CUSTOMER_SERVER);
         GrpcTracing grpcTracing = GrpcTracing.create(tracing);
         server = ServerBuilder.forPort(PORT).addService(new CustomerService()).intercept(grpcTracing.newServerInterceptor()).build().start();
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {

@@ -1,15 +1,5 @@
 package com.xdima.flux;
 
-import brave.Span;
-import brave.Tracer;
-import brave.Tracing;
-import brave.http.HttpServerHandler;
-import brave.http.HttpTracing;
-import brave.propagation.Propagation;
-import brave.propagation.SamplingFlags;
-import brave.propagation.TraceContext;
-import brave.propagation.TraceContextOrSamplingFlags;
-import com.xdima.ZipkinUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.BeanFactory;
@@ -22,12 +12,23 @@ import org.springframework.web.reactive.HandlerMapping;
 import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.WebFilter;
 import org.springframework.web.server.WebFilterChain;
+
+import brave.Span;
+import brave.Tracer;
+import brave.Tracing;
+import brave.http.HttpServerHandler;
+import brave.http.HttpTracing;
+import brave.propagation.Propagation;
+import brave.propagation.SamplingFlags;
+import brave.propagation.TraceContext;
+import brave.propagation.TraceContextOrSamplingFlags;
+import com.xdima.ZipkinUtils;
 import reactor.core.publisher.Mono;
 
 public class TraceWebFilter implements WebFilter, Ordered {
 
     private static final Logger log = LoggerFactory.getLogger(TraceWebFilter.class);
-
+    private static final String HEADER = "X-TRACE_ID";
     private static final String HTTP_COMPONENT = "http";
     private static final String TRACE_REQUEST_ATTR = TraceWebFilter.class.getName()
             + ".TRACE";
@@ -66,7 +67,7 @@ public class TraceWebFilter implements WebFilter, Ordered {
 
     public TraceWebFilter(BeanFactory beanFactory, String serviceName) {
         this.beanFactory = beanFactory;
-        tracing = ZipkinUtils.createTracing(ZipkinUtils.createHttpSender(), serviceName);
+        tracing = ZipkinUtils.createTracing(ZipkinUtils.createSender(), serviceName);
         httpTracing = HttpTracing.create(tracing);
     }
 
@@ -94,7 +95,7 @@ public class TraceWebFilter implements WebFilter, Ordered {
         return this.traceKeys;
     }
 
-    TraceContext.Extractor<HttpHeaders> extractor() {
+    private TraceContext.Extractor<HttpHeaders> extractor() {
         if (this.extractor == null) {
             this.extractor = tracing.propagation().extractor(GETTER);
         }
@@ -174,6 +175,7 @@ public class TraceWebFilter implements WebFilter, Ordered {
                                     }
                                 }
                             }
+                            response.getHeaders().add(HEADER, span.context().traceIdString());
                             return c.put(SpanAndScope.class, new SpanAndScope(span, tracer().withSpanInScope(span)));
                         }));
     }

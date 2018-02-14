@@ -20,7 +20,7 @@ public class OwnerServer {
     private Server server;
 
     private void start ()     throws IOException {
-        Tracing tracing = ZipkinUtils.createTracing(ZipkinUtils.createHttpSender(), OWNER_SERVER);
+        Tracing tracing = ZipkinUtils.createTracing(ZipkinUtils.createSender(), OWNER_SERVER);
         GrpcTracing grpcTracing = GrpcTracing.create(tracing);
         server = ServerBuilder.forPort(PORT).addService(new OwnerService()).intercept(grpcTracing.newServerInterceptor()).build().start();
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
